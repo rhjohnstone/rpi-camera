@@ -5,9 +5,12 @@ from picamera.array import PiRGBArray
 from time import sleep
 
 
-def main():
-    face_cascade = cv.CascadeClassifier("haarcascade_frontalface_default.xml")
-    
+def load_cascade(f_cascade):
+    return cv.CascadeClassifier(f_cascade)
+
+
+def main(f_cascade):
+    face_cascade = load_cascade(f_cascade)
     with PiCamera(resolution=(816, 480), framerate=12) as camera:
         camera.rotation = 180
         camera.start_preview()
@@ -25,5 +28,7 @@ def main():
     cv.destroyAllWindows()
     
 
+F_CASCADE = "cascades/haarcascade_frontalface_default.xml"
+
 if __name__ == "__main__":
-    main()
+    main(F_CASCADE)
