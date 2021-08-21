@@ -37,9 +37,13 @@ def process_and_display(face_cascade: cv.CascadeClassifier, image: np.array):
     cv.imshow("frame", image)
 
 
+def rotate(camera: PiCamera, rotation: int=180):
+    camera.rotation = rotation
+
+
 def main(face_cascade: cv.CascadeClassifier, resolution: Tuple[int], framerate: int):
     with PiCamera(resolution=resolution, framerate=framerate) as camera:
-        camera.rotation = 180
+        rotate(camera)
         let_camera_warm_up()
         with PiRGBArray(camera) as output:
             for frame in camera.capture_continuous(output, format="bgr", use_video_port=True):
