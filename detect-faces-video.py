@@ -3,23 +3,28 @@ import numpy as np
 from picamera import PiCamera
 from picamera.array import PiRGBArray
 from time import sleep
+from typing import Tuple
 
 
 def check_key_press() -> bool:
     return cv.waitKey(1) & 0xFF == ord("q")
 
 
-def draw_rectangles(image, rectangles):
+def draw_rectangles(image: np.array, rectangles: Tuple[int]):
     for x, y, w, h in rectangles:
         cv.rectangle(image, (x, y), (x + w, y + h), (255, 255, 0), 2)
 
 
-def find_faces(face_cascade, image):
+def find_faces(face_cascade: cv.CascadeClassifier, image: np.array) -> Tuple[int]:
     return face_cascade.detectMultiScale(image_to_grey(image), 1.1, 5)
 
 
 def image_to_grey(image: np.array) -> np.array:
     return cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+
+
+def let_camera_warm_up():
+    sleep(2)
 
 
 def load_cascade(f_cascade: str) -> cv.CascadeClassifier:
@@ -32,10 +37,10 @@ def process_and_display(face_cascade: cv.CascadeClassifier, image: np.array):
     cv.imshow("frame", image)
 
 
-def main(face_cascade):
-    with PiCamera(resolution=(640, 480), framerate=12) as camera:
+def main(face_cascade: cv.CascadeClassifier, resolution: Tuple[int], framerate: int):
+    with PiCamera(resolution=resolution, framerate=framerate) as camera:
         camera.rotation = 180
-        sleep(2)
+        let_camera_warm_up()
         with PiRGBArray(camera) as output:
             for frame in camera.capture_continuous(output, format="bgr", use_video_port=True):
                 process_and_display(face_cascade, output.array)               
@@ -46,6 +51,8 @@ def main(face_cascade):
 
 
 F_CASCADE = "cascades/haarcascade_frontalface_default.xml"
+RESOLUTION = (640, 480)
+FRAMERATE = 12
 
 if __name__ == "__main__":
-    main(load_cascade(F_CASCADE))
+    main(load_cascade(F_CASCADE), RESOLUTION, FRAMERATE)
