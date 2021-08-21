@@ -35,6 +35,7 @@ def process_and_display(face_cascade: cv.CascadeClassifier, image: np.array):
     faces = find_faces(face_cascade, image)
     draw_rectangles(image, faces)
     cv.imshow("frame", image)
+    return image
 
 
 def rotate(camera: PiCamera, rotation: int=180):
@@ -42,21 +43,24 @@ def rotate(camera: PiCamera, rotation: int=180):
 
 
 def main(face_cascade: cv.CascadeClassifier, resolution: Tuple[int], framerate: int):
+    out = cv.VideoWriter("faces.mp4", cv.VideoWriter_fourcc('M','J','P','G'), framerate, resolution)
     with PiCamera(resolution=resolution, framerate=framerate) as camera:
         rotate(camera)
         let_camera_warm_up()
         with PiRGBArray(camera) as output:
             for frame in camera.capture_continuous(output, format="bgr", use_video_port=True):
-                process_and_display(face_cascade, output.array)               
+                image = process_and_display(face_cascade, output.array)
+                out.write(image)
                 output.truncate(0)
                 if check_key_press():
                     cv.destroyAllWindows()
+                    out.release()
                     break
 
 
 F_CASCADE = "cascades/haarcascade_frontalface_default.xml"
 RESOLUTION = (640, 480)
-FRAMERATE = 12
+FRAMERATE = 15
 
 if __name__ == "__main__":
     main(load_cascade(F_CASCADE), RESOLUTION, FRAMERATE)
